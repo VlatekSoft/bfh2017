@@ -253,12 +253,10 @@ contract MintableToken is StandardToken, Ownable {
   function finishMinting() onlyOwner canMint public returns (bool) {
     mintingFinished = true;
     MintFinished();
-    return true;
+    return false;
   }
 }
-/**
-Наш коин для игры
-*/
+
 contract SportInspector is MintableToken {
 
     string public constant name = "Sport Coin Token";
@@ -268,3 +266,70 @@ contract SportInspector is MintableToken {
     uint32 public constant decimals = 18;
 
 }
+
+contract Game{
+    SportInspector token = new SportInspector();
+    bool public gameIsStarted = false;
+    address public gameOwner;
+    uint32 countPlayers = 0;
+    mapping (address => uint32) playersBit;
+    mapping (address => bool) public playersWin;
+    uint32 bank = 0;
+    uint32 sumWin = 0;
+
+    function Game() public {
+    gameOwner = msg.sender;
+     }
+
+    function playerIn(address _user,uint32 _bit){
+        if(!gameIsStarted){
+            playersBit[_user] = _bit;
+            playersWin[_user] = false;
+            token.approve( _user, _bit);
+            token.transferFrom( _user, 0xca35b7d915458ef540ade6068dfe2f44e8fa733c,_bit);
+            bank += _bit;
+            countPlayers++;
+        }
+    }
+
+    function startGame(address _player){
+        require(gameOwner == _player);
+        gameIsStarted = true;
+    }
+
+    function putResurt(address _addres, bool result){
+            if(gameIsStarted){
+            playersWin[_addres] = result;
+            if (result==true)
+                sumWin += playersBit[_addres];
+            countPlayers--;
+                }
+    if(countPlayers==0){
+        reward();
+    }
+
+    }
+
+
+
+    function reward(){
+
+        //комиссия в %
+        uint8 r=10;
+        //профит без комиссии
+        uint32 rawProfit = bank - sumWin;
+        //профит за вычетом комиссии, который будет распределяться между победителями
+        uint32 finProfit = rawProfit*r/100;
+
+
+    }
+}
+
+contract gameFactory {
+
+    address public newGame;
+    function createGame() {
+        newGame = new Game();
+    }
+
+} 
