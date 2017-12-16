@@ -268,12 +268,14 @@ contract SportInspector is MintableToken {
 }
 
 contract Game{
+
     bool public gameIsStarted = false;
     address public gameOwner;
     uint32 countPlayers = 0;
     mapping (address => uint32) playersBit;
-    mapping (address => bool) playersWin;
-
+    mapping (address => bool) public playersWin;
+    uint32 bank = 0;
+    uint32 sumWin = 0;
 
     function Game() public {
     gameOwner = msg.sender;
@@ -283,6 +285,8 @@ contract Game{
         if(!gameIsStarted){
             playersBit[_user] = _bit;
             playersWin[_user] = false;
+            balances[_user] -= _bit;
+            bank += _bit;
             countPlayers++;
         }
     }
@@ -294,7 +298,9 @@ contract Game{
 
     function putResurt(address _addres, bool result){
             if(gameIsStarted){
-            playersWin[_addres] = true;
+            playersWin[_addres] = result;
+            if (result==true)
+                sumWin += playersBit[_addres];
             countPlayers--;
                 }
     if(countPlayers==0){
@@ -303,8 +309,21 @@ contract Game{
 
     }
 
+    function reward() {
+        require(playersWin[msg.sender]);
+
+    }
+
     function reward(){
-    // some logic
+
+        //комиссия в %
+        uint8 r=10;
+        //профит без комиссии
+        uint32 rawProfit = bank - sumWin;
+        //профит за вычетом комиссии, который будет распределяться между победителями
+        uint32 finProfit = rawProfit*r/100;
+
+
     }
 }
 
