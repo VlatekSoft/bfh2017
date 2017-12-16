@@ -259,9 +259,9 @@ contract MintableToken is StandardToken, Ownable {
 
 contract SportInspector is MintableToken {
 
-    string public constant name = "Sport Coin Token";
+    string public constant name = "sportereum token";
 
-    string public constant symbol = "SCT";
+    string public constant symbol = "SET";
 
     uint32 public constant decimals = 18;
 
