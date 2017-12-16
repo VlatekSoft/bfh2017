@@ -268,14 +268,14 @@ contract SportInspector is MintableToken {
 }
 
 contract Game{
-    SportInspector token = new SportInspector();
+    SportInspector token = SportInspector(0x013192e40e42bf7e3eb6f844424cab5e7a438005);
     bool public gameIsStarted = false;
     address public gameOwner;
-    uint32 countPlayers = 0;
-    mapping (address => uint32) playersBit;/*хранение ставок игроков*/
+    uint256 public countPlayers = 0;
+    mapping (address => uint256) public playersBit;/*хранение ставок игроков*/
     mapping (address => bool) public playersWin;/*хранение результатов игры*/
-    uint32 bank = 0; /*банк игры*/
-    uint32 sumWin = 0; /*банк победителей - сумма ставок победителей*/
+    uint256 public bank = 0; /*банк игры*/
+    uint256 public sumWin = 0; /*банк победителей - сумма ставок победителей*/
 
     //конструктор игры
     function Game() public {
@@ -283,14 +283,14 @@ contract Game{
      }
 
     //добавление нового игрока в игру, подписание контракта
-    function playerIn(address _user,uint32 _bit) returns (bool success){
+    function playerIn(address _user,uint256 _bit) returns (bool success){
         if(!gameIsStarted){
             require(token.balanceOf(_user)>=_bit);
 
             playersBit[_user] = _bit;
             playersWin[_user] = false;
-            token.approve( _user, _bit);/*игрок разрешает системе забирать его средства*/
-            token.transferFrom( _user, 0xca35b7d915458ef540ade6068dfe2f44e8fa733c,_bit); /*холд средств*/   /*пока адрес контракта захардкожен*/
+
+            token.transferFrom( _user, this,_bit); /*холд средств*/   /*пока адрес контракта захардкожен*/
             bank += _bit;
             countPlayers++;
             return true;
@@ -321,14 +321,14 @@ contract Game{
     //комиссия в %
     uint8 r=10;
     //профит без комиссии
-    uint32 rawProfit = bank - sumWin;
+    uint256 rawProfit = bank - sumWin;
     //профит за вычетом комиссии, который будет распределяться между победителями
-    uint32 finProfit = rawProfit*r/100;
+    uint256 finProfit = rawProfit*r/100;
 
     function reward() {
         require(isFinished == true);
          require(playersWin[msg.sender]);
-         uint32 playerProfit = finProfit*playersBit[msg.sender]/sumWin; /*рассчет выйгрыша отдельного игрока: общий банк выйгрыша * долю игрока в общем банке*/
+         uint256 playerProfit = finProfit*playersBit[msg.sender]/sumWin; /*рассчет выйгрыша отдельного игрока: общий банк выйгрыша * долю игрока в общем банке*/
          token.transfer (msg.sender, playersBit[msg.sender]+playerProfit);
     }
 }
