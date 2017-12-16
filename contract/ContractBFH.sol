@@ -256,7 +256,9 @@ contract MintableToken is StandardToken, Ownable {
     return true;
   }
 }
-
+/**
+Наш коин для игры
+*/
 contract SportInspector is MintableToken {
 
     string public constant name = "Sport Coin Token";
