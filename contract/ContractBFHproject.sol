@@ -281,15 +281,19 @@ contract Game{
     gameOwner = msg.sender;
      }
 
-    function playerIn(address _user,uint32 _bit){
+    function playerIn(address _user,uint32 _bit) returns (bool success){
         if(!gameIsStarted){
+            require(token.balanceOf(_user)>=_bit);
+
             playersBit[_user] = _bit;
             playersWin[_user] = false;
             token.approve( _user, _bit);
             token.transferFrom( _user, 0xca35b7d915458ef540ade6068dfe2f44e8fa733c,_bit);
             bank += _bit;
             countPlayers++;
+            return true;
         }
+        return false;
     }
 
     function startGame(address _player){
@@ -312,16 +316,17 @@ contract Game{
 
 
 
-    function reward(){
+ //комиссия в %
+    uint8 r=10;
+    //профит без комиссии
+    uint32 rawProfit = bank - sumWin;
+    //профит за вычетом комиссии, который будет распределяться между победителями
+    uint32 finProfit = rawProfit*r/100;
 
-        //комиссия в %
-        uint8 r=10;
-        //профит без комиссии
-        uint32 rawProfit = bank - sumWin;
-        //профит за вычетом комиссии, который будет распределяться между победителями
-        uint32 finProfit = rawProfit*r/100;
-
-
+    function reward() {
+         require(playersWin[msg.sender]);
+         uint32 playerProfit = finProfit*playersBit[msg.sender]/sumWin; /*рассчет выйгрыша отдельного игрока: общий банк выйгрыша * долю игрока в общем банке*/
+         token.transfer (msg.sender, playersBit[msg.sender]+playerProfit);
     }
 }
 
