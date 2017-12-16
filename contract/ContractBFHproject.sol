@@ -259,9 +259,9 @@ contract MintableToken is StandardToken, Ownable {
 
 contract SportInspector is MintableToken {
 
-    string public constant name = "Sport Coin Token";
+    string public constant name = "sportereum token";
 
-    string public constant symbol = "SCT";
+    string public constant symbol = "SET";
 
     uint32 public constant decimals = 18;
 
@@ -272,23 +272,25 @@ contract Game{
     bool public gameIsStarted = false;
     address public gameOwner;
     uint32 countPlayers = 0;
-    mapping (address => uint32) playersBit;
-    mapping (address => bool) public playersWin;
-    uint32 bank = 0;
-    uint32 sumWin = 0;
+    mapping (address => uint32) playersBit;/*хранение ставок игроков*/
+    mapping (address => bool) public playersWin;/*хранение результатов игры*/
+    uint32 bank = 0; /*банк игры*/
+    uint32 sumWin = 0; /*банк победителей - сумма ставок победителей*/
 
+    //конструктор игры
     function Game() public {
-    gameOwner = msg.sender;
+        gameOwner = msg.sender;
      }
 
+    //добавление нового игрока в игру, подписание контракта
     function playerIn(address _user,uint32 _bit) returns (bool success){
         if(!gameIsStarted){
             require(token.balanceOf(_user)>=_bit);
 
             playersBit[_user] = _bit;
             playersWin[_user] = false;
-            token.approve( _user, _bit);
-            token.transferFrom( _user, 0xca35b7d915458ef540ade6068dfe2f44e8fa733c,_bit);
+            token.approve( _user, _bit);/*игрок разрешает системе забирать его средства*/
+            token.transferFrom( _user, 0xca35b7d915458ef540ade6068dfe2f44e8fa733c,_bit); /*холд средств*/   /*пока адрес контракта захардкожен*/
             bank += _bit;
             countPlayers++;
             return true;
@@ -296,27 +298,27 @@ contract Game{
         return false;
     }
 
+    /*начало игры - блок на вход новых игроков*/
     function startGame(address _player){
         require(gameOwner == _player);
         gameIsStarted = true;
     }
 
-    function putResurt(address _addres, bool result){
+    bool isFinished = false;
+
+    /*ввод результатов игры и вызов функции распределения выйгрышей*/
+    function putResult(address _addres, bool result){
             if(gameIsStarted){
             playersWin[_addres] = result;
             if (result==true)
                 sumWin += playersBit[_addres];
             countPlayers--;
-                }
+            }
     if(countPlayers==0){
-        reward();
+        isFinished=true;
     }
-
     }
-
-
-
- //комиссия в %
+    //комиссия в %
     uint8 r=10;
     //профит без комиссии
     uint32 rawProfit = bank - sumWin;
@@ -324,11 +326,13 @@ contract Game{
     uint32 finProfit = rawProfit*r/100;
 
     function reward() {
+        require(isFinished == true);
          require(playersWin[msg.sender]);
          uint32 playerProfit = finProfit*playersBit[msg.sender]/sumWin; /*рассчет выйгрыша отдельного игрока: общий банк выйгрыша * долю игрока в общем банке*/
          token.transfer (msg.sender, playersBit[msg.sender]+playerProfit);
     }
 }
+
 
 contract gameFactory {
 
