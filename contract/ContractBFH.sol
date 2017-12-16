@@ -253,12 +253,10 @@ contract MintableToken is StandardToken, Ownable {
   function finishMinting() onlyOwner canMint public returns (bool) {
     mintingFinished = true;
     MintFinished();
-    return true;
+    return false;
   }
 }
-/**
-Наш коин для игры
-*/
+
 contract SportInspector is MintableToken {
 
     string public constant name = "Sport Coin Token";
@@ -268,3 +266,45 @@ contract SportInspector is MintableToken {
     uint32 public constant decimals = 18;
 
 }
+
+contract Game{
+    bool public gameIsStarted = false;
+    address public gameOwner;
+    uint32 countPlayers = 0;
+    mapping (address => uint32) playersBit;
+    mapping (address => bool) playersWin;
+
+
+    function Game() public {
+    gameOwner = msg.sender;
+     }
+
+    function playerIn(address _user,uint32 _bit){
+        if(!gameIsStarted){
+            playersBit[_user] = _bit;
+            playersWin[_user] = false;
+            countPlayers++;
+        }
+    }
+
+    function startGame(address _player){
+        require(gameOwner == _player);
+        gameIsStarted = true;
+    }
+
+    function putResurt(address _addres, bool result){
+            if(gameIsStarted){
+            playersWin[_addres] = true;
+            countPlayers--;
+                }
+    if(countPlayers==0){
+        reward();
+    }
+
+    }
+
+    function reward(){
+    // some logic
+    }
+}
+
