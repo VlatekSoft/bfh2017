@@ -1,0 +1,1 @@
+"github.com/OpenZeppelin/zeppelin-solidity/contracts/token/MintableToken.sol"
