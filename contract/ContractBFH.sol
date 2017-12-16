@@ -268,7 +268,7 @@ contract SportInspector is MintableToken {
 }
 
 contract Game{
-
+    SportInspector token = new SportInspector();
     bool public gameIsStarted = false;
     address public gameOwner;
     uint32 countPlayers = 0;
@@ -285,7 +285,8 @@ contract Game{
         if(!gameIsStarted){
             playersBit[_user] = _bit;
             playersWin[_user] = false;
-            balances[_user] -= _bit;
+            token.approve( _user, _bit);
+            token.transferFrom( _user, 0xca35b7d915458ef540ade6068dfe2f44e8fa733c,_bit);
             bank += _bit;
             countPlayers++;
         }
@@ -309,10 +310,7 @@ contract Game{
 
     }
 
-    function reward() {
-        require(playersWin[msg.sender]);
 
-    }
 
     function reward(){
 
@@ -327,3 +325,11 @@ contract Game{
     }
 }
 
+contract gameFactory {
+
+    address public newGame;
+    function createGame() {
+        newGame = new Game();
+    }
+
+} 
