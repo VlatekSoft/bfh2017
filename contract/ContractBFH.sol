@@ -16,8 +16,8 @@ contract BFHChecker{
  * Положить средства на контракт
  */
     function putEth(address user, uint128 value) public payable{
-     mapping[user] = value;
+     balanses[user] = value;
     }
 
-
+function
 }
